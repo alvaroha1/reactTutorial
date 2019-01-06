@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 
-import Button from '../../../components/UI/Button';
+import Button from '../../../components/UI/Button/Button';
+import classes from './ContactData.css';
+import axios from '../../../axios.orders';
+import Spinner from '../../../components/UI/Spinner/Spinner';
 
 class ContactData extends Component {
     state = {
@@ -9,22 +12,57 @@ class ContactData extends Component {
         address: {
             street: '',
             postalCode: '',
-    }
+    },
+    loading: false,
+}
+
+orderHandler = (event) => {
+    event.preventDefault();
+    this.setState( { loading: true } );
+        const order = {
+        ingredients: this.state.ingredients,
+        price: this.props.price,
+            customer: {
+                name: 'Alvaro',
+                address: {
+                    street: 'Teststreet 1',
+                    zipCode: '41351',
+                    country: 'Germany',
+                },
+                email: 'test@test.com'
+            },
+            deliveryMethod: 'fastes',
+        }
+        axios.post('/orders.json', order)    //endpoint podria ser del backend router
+            .then(response => {
+                this.setState({ loading: false });
+                this.props.history.push('/');
+            }   )
+            .catch(error => {
+                this.setState({ loading: false });
+            }); 
 }
 
 render () {
+    let form = (
+        <form>
+        <input className={classes.Input} type="text" name="name" placeholder="your Name" />
+        <input className={classes.Input} type="email" name="email" placeholder="your Mail" />
+        <input className={classes.Input} type="text" name="street" placeholder="Street" />
+        <input className={classes.Input} type="text" name="postal" placeholder="Postal Code" />
+        <Button btnType="Success" clicked={this.orderHandler}>Order</Button>
+    </form>
+    );
+    if (this.state.loading) {
+        form = <Spinner />;
+    }
     return (
-        <div>
+        <div className={classes.ContactData}>
             <h4>Enter your Contact Data</h4>
-            <form>
-                <input type="text" name="name" placeholder="your Name" />
-                <input type="email" name="email" placeholder="your Mail" />
-                <input type="text" name="street" placeholder="Street" />
-                <input type="text" name="postal" placeholder="Postal Code" />
-                <Button btnType="Success">Order</Button>
-            </form>
+            {form}
         </div>
     );
+}
 }
 
 export default ContactData;
